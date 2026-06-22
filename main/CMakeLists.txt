@@ -23,6 +23,8 @@ set(SRCS
  ioports_analog.c
  i2c.c
  spi.c
+ neopixel_rmt.c
+ neopixel_spi.c
  boards/BlackBoxX32.c
  boards/ooznest_cnc.c
  grbl/grbllib.c
@@ -272,11 +274,8 @@ list (APPEND SRCS ${MISC_PLUGINS_SOURCE})
 list (APPEND SRCS ${EMBROIDERY_SOURCE})
 list (APPEND SRCS ${OPENPNP_SOURCE})
 
-if(Ethernet OR ETHERNET_ENABLE EQUAL 1)
 list (APPEND SRCS ${ETHERNET_SOURCE})
-else()
 list (APPEND SRCS ${WIFI_SOURCE})
-endif()
 
 idf_component_register(
     SRCS 
@@ -321,6 +320,6 @@ unset(Ethernet CACHE)
 unset(AddMyPlugin CACHE)
 
 #target_compile_options("${COMPONENT_LIB}" PRIVATE -Werror -Wall -Wextra -Wmissing-field-initializers)
-target_compile_options("${COMPONENT_LIB}" PRIVATE -Wimplicit-fallthrough=1 -Wno-missing-field-initializers -Wno-maybe-uninitialized -Wno-stringop-truncation)
+target_compile_options("${COMPONENT_LIB}" PRIVATE -Wimplicit-fallthrough=1 -Wno-missing-field-initializers -Wno-maybe-uninitialized -Wno-stringop-truncation -Wno-expansion-to-defined)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
