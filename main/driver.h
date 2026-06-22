@@ -158,6 +158,8 @@ typedef struct {
   #include "boards/mks_tinybee_1_0_map.h"
 #elif defined(BOARD_ESP_S3_UNO)
   #include "boards/esp_s3_uno_map.h"  
+#elif defined(BOARD_ESP_S3_CUSTOM)
+  #include "boards/esp_s3_custom_map.h"    
 #elif defined(BOARD_PIBOT_I2S_6_AXIS)
   #include "boards/pibot_i2s_6_axis_map.h"
 #elif defined(BOARD_BLACKBOX_X32)

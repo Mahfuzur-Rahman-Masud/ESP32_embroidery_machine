@@ -36,7 +36,8 @@
 //#define BOARD_MKS_DLC32_MAX_V1        			// Has a ESP32-S3 MCU
 //#define BOARD_MKS_DLC32_V2P0          			//
 // #define BOARD_MKS_TINYBEE_V1          			//
-#define BOARD_ESP_S3_UNO
+// #define BOARD_ESP_S3_UNO
+#define BOARD_ESP_S3_CUSTOM
 
 //#define BOARD_MKS_TINYBEE_V1          			//
 //#define BOARD_OOZNEST_CNC                         // Has a ESP32-S3 MCU
