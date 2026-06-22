@@ -86,15 +86,20 @@
 #endif
 #endif
 
-#define AUXOUTPUT0_PIN      GPIO_NUM_2 // Spindle PWM
+// #define AUXOUTPUT0_PIN      GPIO_NUM_2 // Spindle PWM
 #define AUXOUTPUT1_PIN      I2SO(18)   // Spindle direction, HE1
 #define AUXOUTPUT2_PIN      I2SO(17)   // Spindle enable, HE0
 #define AUXOUTPUT3_PIN      I2SO(19)   // Coolant flood, FAN1
 #define AUXOUTPUT4_PIN      I2SO(20)   // Coolant mist, FAN2
 
+#if PWM_SERVO_ENABLE
+#define AUXOUTPUT0_PWM_PIN      GPIO_NUM_2 
+#define SERVO0_PIN GPIO_NUM_2
+#endif
+
 // Define driver spindle pins
 #if DRIVER_SPINDLE_ENABLE & SPINDLE_PWM
-#define SPINDLE_PWM_PIN         AUXOUTPUT0_PIN
+#define SPINDLE_PWM_PIN         GPIO_NUM_2
 #endif
 #if DRIVER_SPINDLE_ENABLE & SPINDLE_DIR
 #define SPINDLE_DIRECTION_PIN   AUXOUTPUT1_PIN

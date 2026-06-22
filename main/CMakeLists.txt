@@ -278,7 +278,19 @@ else()
 list (APPEND SRCS ${WIFI_SOURCE})
 endif()
 
-idf_component_register(SRCS "${SRCS}" INCLUDE_DIRS ".")
+idf_component_register(
+    SRCS 
+        "${SRCS}" 
+        "motor_control.c"
+        "custom/custom_mcode.c"
+        "custom/custom_commands.c"
+        "custom/linear_motor.c"
+        "embroidery/embroidery_spi.c"
+
+
+    INCLUDE_DIRS "."
+    REQUIRES driver esp_timer
+)
 
 target_compile_definitions("${COMPONENT_LIB}" PUBLIC GRBL_ESP32)
 target_compile_definitions("${COMPONENT_LIB}" PUBLIC LITTLEFS_ENABLE=1)

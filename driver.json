@@ -234,6 +234,24 @@
         "control_inputs": 2
       }
     },
+
+        {
+      "name": "ESP32 S3 Uno",
+      "symbol": "BOARD_ESP_S3_UNO",
+      "URL": "https://github.com/makerbase-mks/MKS-TinyBee",
+      "MAP": "main/boards/esp_s3_uno.map.h",
+      "caps": {
+        "axes": 5,
+        "usb_cdc": 1,
+        "serial_ports": 2,
+        "digital_in": 1,
+        "sdcard": 1,
+        "estop": 0,
+        "wifi": 1,
+        "bluetooth": 1,
+        "control_inputs": 2
+      }
+    },
     {
       "name": "SourceRabbit 4-axis CNC Motherboard",
       "symbol": "BOARD_SOURCERABBIT_4AXIS",
