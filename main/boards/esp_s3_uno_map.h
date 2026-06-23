@@ -21,7 +21,8 @@
 
 // --- LIMIT SWITCHES ---
 // Matches Shield D9, D10, D11
-// NOTE: IO46 (X_LIMIT) might need a physical 10k pull-up resistor
+
+
 #define X_LIMIT_PIN GPIO_NUM_46
 // #define Y_LIMIT_PIN GPIO_NUM_10
 // #define Z_LIMIT_PIN GPIO_NUM_11
