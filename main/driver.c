@@ -2721,12 +2721,12 @@ IRAM_ATTR static uint_fast16_t valueSetAtomic (volatile uint_fast16_t *ptr, uint
     return prev;
 }
 
-static void enable_irq (void)
+static void IRAM_ATTR enable_irq (void)
 {
     portEXIT_CRITICAL(&mux);
 }
 
-static void disable_irq (void)
+static void IRAM_ATTR disable_irq (void)
 {
     portENTER_CRITICAL(&mux);
 }
