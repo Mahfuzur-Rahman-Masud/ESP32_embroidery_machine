@@ -213,12 +213,16 @@ static status_code_t cb_execute(sys_state_t state, parser_block_t* gc_block)
     }
 
     case Custom_LINEAR_MOTOR_RPM: {
+        #ifdef LINEAR_MOTOR
         linear_motor_set_rpm(gc_block->output_command.value);
+        #endif 
         break;
     }
 
     case Custom_LINEAR_MOTOR_TRIM: {
+        #ifdef LINEAR_MOTOR
         linear_motor_trim();
+        #endif
         break;
     }
 
