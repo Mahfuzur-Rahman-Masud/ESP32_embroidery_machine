@@ -36,8 +36,8 @@
 //#define BOARD_MKS_DLC32_MAX_V1        			// Has a ESP32-S3 MCU
 //#define BOARD_MKS_DLC32_V2P0          			//
 // #define BOARD_MKS_TINYBEE_V1          			//
-// #define BOARD_ESP_S3_UNO
-#define BOARD_ESP_S3_CUSTOM
+#define BOARD_ESP_S3_UNO
+// #define BOARD_ESP_S3_CUSTOM
 
 //#define BOARD_MKS_TINYBEE_V1          			//
 //#define BOARD_OOZNEST_CNC                         // Has a ESP32-S3 MCU
@@ -57,7 +57,7 @@
 // Uncomment to enable, for some a value > 1 may be assigned, if so the default value is shown.
 
 #if CONFIG_IDF_TARGET_ESP32S3
-#define USB_SERIAL_CDC          0 // Serial communication via native USB.
+#define USB_SERIAL_CDC          0 
 #endif
 
 // Spindle selection:
@@ -67,8 +67,12 @@
 // Spindle definitions can be found in grbl/spindle_control.h.
 // More here https://github.com/grblHAL/Plugins_spindle
 // #define SPINDLE0_ENABLE           SPINDLE_NONE
-#define N_SPINDLES                1
-#define SPINDLE0_ENABLE           SPINDLE_PWM0
+#define N_SPINDLES                        1
+#define SPINDLE0_ENABLE                   SPINDLE_PWM0
+#define SPINDLE_ENCODER_ENABLE            1
+#define SPINDLE_SYNC_ENABLE               1
+#define ENABLE_SPINDLE_LINEARIZATION      1
+#define DEFAULT_SPINDLE_PPR               1024
 // #define SPINDLE1_ENABLE           SPINDLE_PWM1_NODIR
 
 //#define SPINDLE0_ENABLE         SPINDLE_HUANYANG1
@@ -133,11 +137,11 @@
 #define MOTOR_CONTROL_ENABLE          1  // Mahfuzur Rahman: custom RPM control using ADRC 
 
 
-#define LINEAR_MOTOR  1   // Linear spindle contorl
+// #define LINEAR_MOTOR  1   // Linear spindle contorl
 
-#ifdef LINEAR_MOTOR 
+// #ifdef LINEAR_MOTOR 
 // #define USE_LINEAR_MOTOR_AS_SPINDLE 1
-#endif
+// #endif
 
 
 // #define OPENPNP_ENABLE          1 // OpenPNP plugin. To be completed.

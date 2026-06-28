@@ -31,7 +31,16 @@
 
 
 // --- SPINDLE & COOLANT ---
+
+
+
 // Matches Shield D12, D13, A3
+
+#ifdef SPINDLE_ENCODER_ENABLE
+#define SPINDLE_PULSE_PIN       GPIO_NUM_10
+#define SPINDLE_INDEX_PIN       GPIO_NUM_11
+#endif 
+
 #if SPINDLE0_ENABLE
 #define SPINDLE_ENCODER_PIN GPIO_NUM_10
 #define SPINDLE_TRIGGER_PIN GPIO_NUM_11
@@ -42,8 +51,13 @@
 #endif
 #endif
 
+// #define ENABLE_SPINDLE_LINEARIZATION  1
+
+
+
+
 #ifdef LINEAR_MOTOR
-#define PWM_PIN_LINEAR_MOTOR GPIO_NUM_6 
+#define PWM_PIN_LINEAR_MOTOR SPINDLE_PWM_PIN 
 #else
 #define COOLANT_FLOOD_PIN GPIO_NUM_6
 #endif 

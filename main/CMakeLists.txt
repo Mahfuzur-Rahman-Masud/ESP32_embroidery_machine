@@ -284,6 +284,7 @@ idf_component_register(
         "custom/custom_mcode.c"
         "custom/custom_commands.c"
         "custom/linear_motor.c"
+        "custom/motor_util.c"
         "embroidery/embroidery_spi.c"
 
 

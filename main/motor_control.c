@@ -3,37 +3,23 @@
 #include "driver/pcnt.h" // Legacy v4.4 header structure
 #include "esp_timer.h"
 #include "grbl/spindle_control.h"
+#include "grbl/grbl.h"
+#include "custom/linear_motor.h"
 
 #define SPINDLE_PWM_GPIO SPINDLE_PWM_PIN
 #define ENCODER_A_GPIO SPINDLE_ENCODER_PIN
-// SPINDLE_ENCODER_ENABLE
 
-#define ENCODER_EDGES_PER_REV 4096.0f
+
+#define ENCODER_EDGES_PER_REV      (DEFAULT_SPINDLE_PPR * 2.0f)
 #define PWM_MAX_DUTY 2047
 
-// --- ADRC Variables ---
-static const float
-    h = 0.001f;
 
-// static float b0 = 400.0f;
-// static float omega_o = 45.0f;
-// static float omega_c = 10.0f;
+static bool motor_control_enabled = false;
+static const float h = 0.001f;
 
-// static float b0 = 1000.0f;       // Increased: Dampens the raw output aggressiveness of u_cmd
-// static float omega_o = 120.0f;   // Increased: Makes the ESO observer track speed changes much faster
-// static float omega_c = 20.0f;
-
-// static float b0 = 2000.0f;    // Heavily dampen the output command scale
-// static float omega_o = 30.0f; // Bring the observer speed down so it doesn't overreact to 1-pulse jumps
-// static float omega_c = 5.0f;  // Relax the controller stiffness to stop the harsh whiplash corrections
-
-// static float b0 = 2000.0f;    // Heavily dampen the output command scale
-// static float omega_o = 30.0f; // Keep this - your observer is doing great
-// static float omega_c = 3.5f;  // Lowered slightly from 5.0f to soften the low-speed wave
-
-static float b0 = 3500.0f; // INCREASED from 2000: This directly reduces the raw output power of u_cmd corrections
-static float omega_o = 20.0f; // DECREASED from 30: Slows down the observer so it ignores the encoder's low-speed pulse jitter
-static float omega_c = 2.5f; // DECREASED from 5: Softens the controller stiffness to eliminate the harsh 500 RPM surges
+static float b0 = 3500.0f; 
+static float omega_o = 20.0f; 
+static float omega_c = 2.5f; 
 
 static float beta_1, beta_2, K_p;
 
@@ -61,6 +47,19 @@ static spindle_ptrs_t* spindle;
 static spindle_data_t spindle_data;
 static spindle_state_t spindle_state;
 static spindle_param_t spindle_param;
+
+
+void motor_control_enable(bool enabled){
+    motor_control_enabled = enabled;
+
+    #if LINEAR_MOTOR
+    if(enabled){
+        linear_motor_enable(false);
+    }
+    
+
+    #endif 
+}
 
 spindle_data_t* spindle_get_data(spindle_data_request_t request)
 {
@@ -99,30 +98,7 @@ void IRAM_ATTR set_modifiers()
     K_p = omega_c;
 }
 
-// This callback fires automatically every 500ms / 1 sec
-// static void IRAM_ATTR spindle_logging_ticker(void *arg)
-// {
-//     char log_buffer[64];
 
-//     // Tracking variables keep their values between timer calls
-//     static int32_t last_printed_current = -1;
-//     static int32_t last_printed_target = -1;
-
-//     // Convert to integers to filter out microscopic floating-point noise/jitter
-//     int32_t current_rpm_int = (int32_t)(current_rpm + 0.5f); // Simple rounding
-//     int32_t target_rpm_int = (int32_t)(target_rpm + 0.5f);
-
-//     // Only execute if the integer values have actually shifted
-//     if (current_rpm_int != last_printed_current || target_rpm_int != last_printed_target)
-//     {
-//         snprintf(log_buffer, sizeof(log_buffer), "RPM: %ld / %ld", (long)current_rpm_int, (long)target_rpm_int);
-//         report_message(log_buffer, Message_Info);
-
-//         // CRITICAL: Update the static trackers so we don't print again until another change happens
-//         last_printed_current = current_rpm_int;
-//         last_printed_target = target_rpm_int;
-//     }
-// }
 
 float getRPM()
 {
@@ -134,14 +110,14 @@ float getTargetRPM()
     return target_rpm;
 }
 
-void IRAM_ATTR reportRPM()
+void reportRPM()
 {
-    // char log_buffer[64];
+    char log_buffer[64];
 
-    // int32_t display_rpm_int = (int32_t)(current_rpm + 0.5f);
-    // int32_t target_rpm_int = (int32_t)(target_rpm + 0.5f);
-    // snprintf(log_buffer, sizeof(log_buffer), "#RPM: %d / %d", (int)display_rpm_int, (int)target_rpm_int);
-    // report_message(log_buffer, Message_Info);
+    int32_t display_rpm_int = (int32_t)(current_rpm + 0.5f);
+    int32_t target_rpm_int = (int32_t)(target_rpm + 0.5f);
+    snprintf(log_buffer, sizeof(log_buffer), "#RPM: %d / %d\n", (int)display_rpm_int, (int)target_rpm_int);
+    hal.stream.write(log_buffer);
 }
 
 static void spindle_logging_ticker(void* arg)
@@ -149,38 +125,33 @@ static void spindle_logging_ticker(void* arg)
     static int32_t last_printed_rpm = -1;
     static int32_t last_printed_target = -1;
 
-    // Disabling interrupts momentarily ensures we read the accumulators safely
+  
     uint32_t captured_pulses = rolling_pulse_accumulator;
     uint32_t captured_samples = pulse_sample_count;
 
-    // Reset the accumulators immediately for the next 500ms window
+
     rolling_pulse_accumulator = 0;
     pulse_sample_count = 0;
 
     if (captured_samples > 0 && target_rpm > 0.0f) {
-        // Total time elapsed in seconds for this measurement window
-        // (e.g., 500 samples * 0.001s = 0.5 seconds)
         float total_time = (float)captured_samples * h;
-
-        // True average RPM = (Total Pulses / Total Time) / Edges Per Rev * 60 seconds
         float calculated_avg_rpm = ((float)captured_pulses / total_time) / ENCODER_EDGES_PER_REV * 60.0f;
-
-        // Apply a gentle display filter so the numbers don't twitch on the screen
         smooth_display_rpm = (smooth_display_rpm * 0.3f) + (calculated_avg_rpm * 0.7f);
+
     } else {
         smooth_display_rpm = 0.0f;
     }
 
-    // Convert to integer for clean console viewing
+
     int32_t display_rpm_int = (int32_t)(smooth_display_rpm + 0.5f);
     int32_t target_rpm_int = (int32_t)(target_rpm + 0.5f);
 
-    // Only print if the rounded RPM actually changes
+
     if (display_rpm_int != last_printed_rpm || target_rpm_int != last_printed_target) {
 
-        // char log_buffer[64];
-        // snprintf(log_buffer, sizeof(log_buffer), "RPM: %d / %d", (int)display_rpm_int, (int)target_rpm_int);
-        // report_message(log_buffer, Message_Info);
+        char log_buffer[64];
+        snprintf(log_buffer, sizeof(log_buffer), "RPM: %d / %d\n", (int)display_rpm_int, (int)target_rpm_int);
+        hal.stream.write(log_buffer);
 
         last_printed_rpm = display_rpm_int;
         last_printed_target = target_rpm_int;
@@ -193,6 +164,8 @@ static void spindle_logging_ticker(void* arg)
         spindle->param->rpm_overridden = smooth_display_rpm;
     }
 }
+
+
 
 // Deterministic 1kHz Execution block running via hardware timer
 static void IRAM_ATTR adrc_spindle_ticker(void* arg)
@@ -222,6 +195,7 @@ static void IRAM_ATTR adrc_spindle_ticker(void* arg)
         print_counter = 0;
         flag_print_data = true; // Signal the background loop to print
     }
+
 
     // Unidirectional Speed Translation
     raw_rpm = ((float)pulse_count / h) / ENCODER_EDGES_PER_REV * 60.0f;
@@ -292,6 +266,11 @@ static void IRAM_ATTR adrc_spindle_ticker(void* arg)
 
 void IRAM_ATTR set_adrc_spindle_speed(float rpm)
 {
+
+    if(rpm > 0 && !motor_control_enabled){
+        motor_control_enable(true);
+    }
+
     if (rpm < 0.0f)
         rpm = 0.0f;
 
@@ -310,7 +289,7 @@ void IRAM_ATTR set_adrc_spindle_speed(float rpm)
     spindle_param.rpm_overridden = rpm;
 
     set_modifiers();
-    reportRPM();
+    // reportRPM();
 }
 
 void IRAM_ATTR set_adrc_spindle_speed_ramp(float rpm, float ramp)
@@ -417,7 +396,7 @@ void init_adrc_spindle_control(void)
     // }
 
     if (spindle) {
-        report_message("spindle found", Message_Plain);
+        hal.stream.write("spindle found\n");
         spindle->set_state = mc_spindle_set_state;
         spindle->update_rpm = mc_spindle_update_rpm;
         spindle->rpm_max = RPM_MAX;
@@ -427,36 +406,8 @@ void init_adrc_spindle_control(void)
 
         spindle->get_state = spindle_get_state;
     } else {
-        report_message("spindle not found", Message_Plain);
+        hal.stream.write("spindle not found\n");
     }
 }
 
-// void set_adrc_spindle_speed(float rpm)
-// {
-//     if (rpm < 0.0f)
-//         rpm = 0.0f;
-//     target_rpm = rpm;
-// }
 
-// void set_adrc_spindle_speed(float rpm) {
-//     if (rpm < 0.0f) rpm = 0.0f;
-//     target_rpm = rpm;
-
-//     // --- DYNAMIC GAIN SCHEDULING ---
-//     if (target_rpm <= 500.0f) {
-//         // Relaxed settings to prevent low-speed oscillations
-//         b0 = 3500.0f;
-//         omega_o = 20.0f;
-//         omega_c = 2.5f;
-//     } else {
-//         // Aggressive settings for tight tracking at high speeds
-//         b0 = 2000.0f;
-//         omega_o = 30.0f;
-//         omega_c = 5.0f;
-//     }
-
-//     // CRITICAL: Recalculate your matrix properties based on the selected targets
-//     beta_1 = 2.0f * omega_o;
-//     beta_2 = omega_o * omega_o;
-//     K_p = omega_c;
-// }

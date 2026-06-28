@@ -20,7 +20,7 @@ void reportRPM();
  */
 void set_adrc_spindle_speed(float rpm);
 
-
+void motor_control_enable(bool enabled);
 void set_adrc_spindle_speed_ramp(float rpm, float ramp);
 
 #ifdef __cplusplus
