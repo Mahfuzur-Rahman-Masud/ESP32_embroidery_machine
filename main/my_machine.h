@@ -36,8 +36,32 @@
 //#define BOARD_MKS_DLC32_MAX_V1        			// Has a ESP32-S3 MCU
 //#define BOARD_MKS_DLC32_V2P0          			//
 // #define BOARD_MKS_TINYBEE_V1          			//
-#define BOARD_ESP_S3_UNO
-// #define BOARD_ESP_S3_CUSTOM
+// #define BOARD_ESP_S3_UNO
+// #define BOARD_ESP_S3_CUSTOM       
+
+// #define MACHINE_FRONT
+#define MACHINE_CORE
+
+#ifdef MACHINE_FRONT
+  #ifndef BOARD_ESP_S3_CUSTOM
+    #define BOARD_ESP_S3_CUSTOM
+  #endif
+
+  #ifdef   BOARD_ESP_S3_UNO
+    #undef BOARD_ESP_S3_UNO
+  #endif  
+#endif
+
+#ifdef MACHINE_CORE
+  #ifndef BOARD_ESP_S3_UNO
+    #define BOARD_ESP_S3_UNO
+  #endif
+
+  #ifdef  BOARD_ESP_S3_CUSTOM
+    #undef BOARD_ESP_S3_CUSTOM
+  #endif
+#endif
+
 
 //#define BOARD_MKS_TINYBEE_V1          			//
 //#define BOARD_OOZNEST_CNC                         // Has a ESP32-S3 MCU

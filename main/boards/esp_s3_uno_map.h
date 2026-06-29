@@ -89,7 +89,7 @@
 
 #if EMBROIDERY
 #define RPM_ENCODER_PIN   GPIO_NUM_8// interrupt
-#define STICH_ENCODER_PIN GPIO_NUM_9// interrupt
+#define STITCH_ENCODER_PIN GPIO_NUM_9// interrupt
 #define THREAD_ENCODER_PIN GPIO_NUM_38// interrupt
 #define STEP_BACK_PIN  GPIO_NUM_39// push  pull up 100k 
 #define STEP_FORWARD_PIN GPIO_NUM_40// push pull up 100k

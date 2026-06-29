@@ -209,7 +209,7 @@ static void IRAM_ATTR adrc_spindle_ticker(void* arg)
         ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, 0);
         ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
 
-        if (raw_rpm < .001f) {
+        if (current_rpm < .001f) {
             raw_rpm = 0;
             current_rpm = 0;
             spindle_on = false;
