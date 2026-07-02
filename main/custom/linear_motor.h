@@ -13,6 +13,7 @@ void linear_motor_enable(bool on);
 void linear_motor_set_rpm(int16_t target_rpm);
 void linear_motor_set_rpm_ramp(int16_t target_rpm, int16_t ramp);
 int16_t linear_motor_get_rpm();
+int16_t linear_motor_get_target_rpm();
 void linear_motor_report_rpm();
 void linear_motor_trim(void);
 

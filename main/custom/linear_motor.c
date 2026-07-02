@@ -100,6 +100,10 @@ void linear_motor_report_rpm(){
    motor_util_report_rpm();
 }
 
+IRAM_ATTR int16_t linear_motor_get_target_rpm(){
+    return lm_target_rpm;
+}
+
 IRAM_ATTR int16_t linear_motor_get_rpm()
 {
     return (int16_t) motor_util_get_rpm();

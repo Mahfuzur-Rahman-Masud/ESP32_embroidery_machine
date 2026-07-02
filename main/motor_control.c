@@ -163,6 +163,18 @@ static void spindle_logging_ticker(void* arg)
         spindle->param = &spindle_param;
         spindle->param->rpm_overridden = smooth_display_rpm;
     }
+
+    static spindle_state_t state = {0};
+
+    if(spindle){
+        spindle_state.on = target_rpm > 0;
+        spindle_param.rpm_overridden = current_rpm;
+        spindle->param->rpm = current_rpm;
+        spindle->param->state.on = target_rpm > 0;
+        state.on = spindle_state.on;
+
+    //    spindle->set_state(spindle, state, current_rpm);
+    }
 }
 
 
@@ -270,6 +282,8 @@ void IRAM_ATTR set_adrc_spindle_speed(float rpm)
     if(rpm > 0 && !motor_control_enabled){
         motor_control_enable(true);
     }
+    
+
 
     if (rpm < 0.0f)
         rpm = 0.0f;
@@ -285,11 +299,8 @@ void IRAM_ATTR set_adrc_spindle_speed(float rpm)
 
     target_rpm = rpm;
 
-    spindle_state.on = rpm > 0;
-    spindle_param.rpm_overridden = rpm;
 
     set_modifiers();
-    // reportRPM();
 }
 
 void IRAM_ATTR set_adrc_spindle_speed_ramp(float rpm, float ramp)
@@ -397,14 +408,13 @@ void init_adrc_spindle_control(void)
 
     if (spindle) {
         hal.stream.write("spindle found\n");
-        spindle->set_state = mc_spindle_set_state;
-        spindle->update_rpm = mc_spindle_update_rpm;
-        spindle->rpm_max = RPM_MAX;
-        spindle->rpm_min = RPM_MIN;
-        spindle->get_data = spindle_get_data;
-        spindle->cap.variable = true;
-
-        spindle->get_state = spindle_get_state;
+        // spindle->set_state = mc_spindle_set_state;
+        // spindle->update_rpm = mc_spindle_update_rpm;
+        // spindle->rpm_max = RPM_MAX;
+        // spindle->rpm_min = RPM_MIN;
+        // spindle->get_data = spindle_get_data;
+        // spindle->cap.variable = true;
+        // spindle->get_state = spindle_get_state;
     } else {
         hal.stream.write("spindle not found\n");
     }
